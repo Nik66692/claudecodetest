@@ -1,0 +1,181 @@
+/*
+ * Manabase design tokens — the single source of truth for color, type, spacing,
+ * radius, shadow, motion and z-index. Components must consume these variables
+ * rather than hardcoding values.
+ *
+ * Visual direction: a serious, dark-first deckbuilding workbench. The palette is
+ * a deep desaturated ink with a single restrained brass/gold accent (evoking a
+ * tapped-mana / parchment feel) plus the five canonical MTG mana colors used
+ * strictly as data colors. No decorative gradients, no glassmorphism.
+ */
+
+:root {
+  /* --- Spacing scale (4px base) --- */
+  --space-0: 0;
+  --space-1: 0.25rem; /* 4 */
+  --space-2: 0.5rem; /* 8 */
+  --space-3: 0.75rem; /* 12 */
+  --space-4: 1rem; /* 16 */
+  --space-5: 1.25rem; /* 20 */
+  --space-6: 1.5rem; /* 24 */
+  --space-8: 2rem; /* 32 */
+  --space-10: 2.5rem; /* 40 */
+  --space-12: 3rem; /* 48 */
+  --space-16: 4rem; /* 64 */
+
+  /* --- Typography --- */
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.25rem;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* --- Radius --- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  /* --- Motion --- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 260ms;
+
+  /* --- Z-index --- */
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-nav: 200;
+  --z-overlay: 1000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+  --z-tooltip: 1300;
+
+  /* --- Mana colors (data tokens) --- */
+  --mana-w: #e9e3c8;
+  --mana-u: #3da9e0;
+  --mana-b: #9a8d86;
+  --mana-r: #e0584a;
+  --mana-g: #4bab6e;
+  --mana-c: #b6aca3;
+
+  --mana-w-pip-bg: #f4efd9;
+  --mana-w-pip-fg: #1a1813;
+  --mana-u-pip-bg: #b9e0f6;
+  --mana-u-pip-fg: #0c4a6e;
+  --mana-b-pip-bg: #cbbfb8;
+  --mana-b-pip-fg: #1a1410;
+  --mana-r-pip-bg: #f3b3a6;
+  --mana-r-pip-fg: #7a1d16;
+  --mana-g-pip-bg: #aedcbd;
+  --mana-g-pip-fg: #0f4a2c;
+  --mana-c-pip-bg: #d6cec6;
+  --mana-c-pip-fg: #2a2420;
+}
+
+/* --- Dark theme (default) --- */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0d0f12;
+  --bg-pattern: #0a0c0f;
+  --surface: #14171c;
+  --surface-raised: #1b1f26;
+  --surface-overlay: #21262e;
+  --surface-hover: #232932;
+  --surface-selected: #2a3b41;
+
+  --border: #262b33;
+  --border-strong: #353c46;
+  --border-accent: #6b5320;
+
+  --text: #eef1f5;
+  --text-secondary: #aab2bd;
+  --text-muted: #717a86;
+  --text-on-accent: #1a1305;
+
+  --accent: #d8a93a;
+  --accent-hover: #e8bb52;
+  --accent-muted: #3a3015;
+  --accent-ring: rgba(216, 169, 58, 0.5);
+
+  --success: #57b87a;
+  --success-bg: #16271d;
+  --warning: #d9a441;
+  --warning-bg: #2a2110;
+  --danger: #e0675c;
+  --danger-bg: #2a1614;
+  --danger-hover: #ec7a70;
+  --info: #5aa6d8;
+  --info-bg: #122530;
+
+  --focus-ring: var(--accent-ring);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Light theme (parity for accessibility / user preference) --- */
+[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: #f3f1ea;
+  --bg-pattern: #eceadf;
+  --surface: #ffffff;
+  --surface-raised: #faf8f2;
+  --surface-overlay: #ffffff;
+  --surface-hover: #f0ede3;
+  --surface-selected: #e7eef0;
+
+  --border: #ddd8cb;
+  --border-strong: #c6c0b1;
+  --border-accent: #caa24a;
+
+  --text: #1c1f24;
+  --text-secondary: #4d535c;
+  --text-muted: #767d88;
+  --text-on-accent: #1a1305;
+
+  --accent: #9a6f12;
+  --accent-hover: #855f0c;
+  --accent-muted: #efe2c2;
+  --accent-ring: rgba(154, 111, 18, 0.45);
+
+  --success: #2f7d4f;
+  --success-bg: #e3f1e8;
+  --warning: #9a6f12;
+  --warning-bg: #f4ead0;
+  --danger: #b23b30;
+  --danger-bg: #f6e2df;
+  --danger-hover: #9c3128;
+  --info: #2f6f9a;
+  --info-bg: #e1eef6;
+
+  --focus-ring: var(--accent-ring);
+
+  --shadow-sm: 0 1px 2px rgba(40, 35, 20, 0.12);
+  --shadow-md: 0 4px 12px rgba(40, 35, 20, 0.14);
+  --shadow-lg: 0 12px 32px rgba(40, 35, 20, 0.18);
+  --shadow-pop: 0 8px 24px rgba(40, 35, 20, 0.16);
+}

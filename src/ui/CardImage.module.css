@@ -1,0 +1,70 @@
+.frame {
+  position: relative;
+  aspect-ratio: 488 / 680;
+  width: 100%;
+  border-radius: 4.75% / 3.5%;
+  overflow: hidden;
+  background: var(--surface-overlay);
+  box-shadow: var(--shadow-sm);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+.loaded {
+  opacity: 1;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--surface-raised) 30%,
+    var(--surface-hover) 50%,
+    var(--surface-raised) 70%
+  );
+  background-size: 200% 100%;
+  animation: card-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes card-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+}
+
+.fallbackName {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

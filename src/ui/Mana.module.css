@@ -1,0 +1,78 @@
+.cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.pip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: var(--radius-full);
+  font-size: 0.6875rem;
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.w {
+  background: var(--mana-w-pip-bg);
+  color: var(--mana-w-pip-fg);
+}
+.u {
+  background: var(--mana-u-pip-bg);
+  color: var(--mana-u-pip-fg);
+}
+.b {
+  background: var(--mana-b-pip-bg);
+  color: var(--mana-b-pip-fg);
+}
+.r {
+  background: var(--mana-r-pip-bg);
+  color: var(--mana-r-pip-fg);
+}
+.g {
+  background: var(--mana-g-pip-bg);
+  color: var(--mana-g-pip-fg);
+}
+.c,
+.generic {
+  background: var(--mana-c-pip-bg);
+  color: var(--mana-c-pip-fg);
+}
+
+/* Color-identity dots used in lists and library cards. */
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.dotW {
+  background: var(--mana-w);
+}
+.dotU {
+  background: var(--mana-u);
+}
+.dotB {
+  background: var(--mana-b);
+}
+.dotR {
+  background: var(--mana-r);
+}
+.dotG {
+  background: var(--mana-g);
+}
+.dotC {
+  background: var(--mana-c);
+}
