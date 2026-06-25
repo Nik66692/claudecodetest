@@ -1,0 +1,59 @@
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.iconButton:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.iconButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Comfortable touch target on coarse pointers. */
+@media (pointer: coarse) {
+  .iconButton {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.sm {
+  width: 1.875rem;
+  height: 1.875rem;
+}
+.md {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.bordered {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+}
+.bordered:hover:not(:disabled) {
+  border-color: var(--border-accent);
+}
+
+.danger:hover:not(:disabled) {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.active {
+  background: var(--accent-muted);
+  color: var(--accent);
+}

@@ -1,0 +1,93 @@
+.region {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: min(24rem, calc(100vw - var(--space-8)));
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-strong);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pop);
+  animation: toast-in var(--duration-base) var(--ease-emphasized);
+}
+
+.success {
+  border-left-color: var(--success);
+}
+.error {
+  border-left-color: var(--danger);
+}
+.info {
+  border-left-color: var(--info);
+}
+
+.icon {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.successIcon {
+  color: var(--success);
+}
+.errorIcon {
+  color: var(--danger);
+}
+.infoIcon {
+  color: var(--info);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: var(--text-sm);
+  flex: 1;
+  min-width: 0;
+}
+
+.dismiss {
+  margin: -2px -4px -2px 0;
+  flex-shrink: 0;
+}
+
+.title {
+  font-weight: var(--weight-semibold);
+}
+
+.message {
+  color: var(--text-secondary);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Below the desktop add-cards rail breakpoint the editor shows a floating
+   "Add cards" button and (on phones) a bottom tab bar in the bottom-right /
+   bottom area. Lift toasts above both so they never cover the primary control. */
+@media (max-width: 1023px) {
+  .region {
+    bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  .region {
+    left: var(--space-3);
+    right: var(--space-3);
+    max-width: none;
+  }
+}

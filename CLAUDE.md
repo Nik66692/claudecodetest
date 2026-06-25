@@ -67,8 +67,23 @@ This workflow is backed by project-level skills in `.claude/skills/` and the
 
 ### Project commands
 
-No development, build, lint, type-check, test, or end-to-end commands exist in
-this repository yet. When an application is added, record its **actual** scripts
-here (read from `package.json` or the framework config) and use them in the
-workflow above — for example the real dev command in step 8 and the real
-validation commands in step 13. Do not invent commands.
+The application is a Vite + React + TypeScript app. The real scripts from
+`package.json`:
+
+| Purpose                                            | Command                                          |
+| -------------------------------------------------- | ------------------------------------------------ |
+| Development server (workflow step 8 "run the app") | `npm run dev`                                    |
+| Production build (validation)                      | `npm run build`                                  |
+| Preview production build                           | `npm run preview`                                |
+| Lint                                               | `npm run lint`                                   |
+| Type check                                         | `npm run typecheck`                              |
+| Unit/integration tests (Vitest)                    | `npm run test`                                   |
+| End-to-end tests (Playwright)                      | `npm run test:e2e`                               |
+| Format                                             | `npm run format` (check: `npm run format:check`) |
+
+Use `npm run dev` for visual QA (step 8) and the lint / typecheck / test / build
+/ e2e commands above for validation (step 13). Playwright requires the browser
+once: `npx playwright install chromium`. The stack: React, Vite, React Router,
+CSS Modules + CSS variables (project-owned tokens in `src/styles/tokens.css`),
+Dexie (IndexedDB), Zod, Vitest + React Testing Library, Playwright. Do not invent
+commands beyond these.
