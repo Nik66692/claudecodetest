@@ -109,6 +109,14 @@ export function moveCardToSection(
 ): Deck {
   const entry = findEntry(deck, cardId, from);
   if (!entry || from === to) return deck;
+  // Moving into the commander section must respect commander eligibility and use
+  // commander semantics rather than blindly relabelling the section. Ineligible
+  // cards (e.g. a mana rock) are rejected so a generic move cannot bypass the
+  // rule enforced by the picker.
+  if (to === 'commander') {
+    if (!entry.card.canBeCommander) return deck;
+    return setCommander(deck, entry.card, { additive: commanders(deck).length > 0, now });
+  }
   const withoutSource = deck.cards.filter((c) => c !== entry);
   const target = withoutSource.find((c) => c.cardId === cardId && c.section === to);
   let cards: DeckCard[];
@@ -152,6 +160,11 @@ export function setCommander(
     );
     return touch({ ...deck, cards }, now);
   }
+
+  // Defend the invariant at the domain boundary: a card that cannot be a
+  // commander never enters the commander section, even if a caller asks. The UI
+  // also hides the option, but the domain must not depend on the UI.
+  if (!card.canBeCommander) return deck;
 
   let working = deck;
   if (!options.additive) {

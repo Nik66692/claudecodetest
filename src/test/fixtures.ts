@@ -1,4 +1,4 @@
-import type { Card, ManaColor } from '@/domain/types';
+import type { Card, ManaColor, ProducedMana } from '@/domain/types';
 
 let counter = 0;
 
@@ -14,6 +14,8 @@ export interface CardOverrides {
   canBeCommander?: boolean;
   unlimitedQuantity?: boolean;
   commanderLegal?: boolean;
+  produces?: ProducedMana[];
+  productionDataComplete?: boolean;
 }
 
 /** Build a fully-formed domain Card for tests with sensible defaults. */
@@ -33,6 +35,8 @@ export function makeCard(overrides: CardOverrides = {}): Card {
     canBeCommander: overrides.canBeCommander ?? false,
     unlimitedQuantity: overrides.unlimitedQuantity ?? false,
     commanderLegal: overrides.commanderLegal ?? true,
+    produces: overrides.produces ?? [],
+    productionDataComplete: overrides.productionDataComplete ?? true,
     printing: {
       scryfallId: `scry-${counter}`,
       set: 'tst',
@@ -59,6 +63,7 @@ export const basicForest = (): Card =>
     colors: [],
     colorIdentity: ['G'],
     unlimitedQuantity: true,
+    produces: ['G'],
   });
 
 export const azusaCommander = (): Card =>

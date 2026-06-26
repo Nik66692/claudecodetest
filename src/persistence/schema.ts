@@ -12,11 +12,13 @@ import { MANA_COLORS } from '@/domain/types';
  * and add a migration in `db.ts`.
  */
 
-export const PERSISTENCE_SCHEMA_VERSION = 1;
+export const PERSISTENCE_SCHEMA_VERSION = 2;
 
 const manaColorSchema = z
   .enum(['W', 'U', 'B', 'R', 'G'] as [string, ...string[]])
   .refine((c): c is (typeof MANA_COLORS)[number] => (MANA_COLORS as readonly string[]).includes(c));
+
+const producedManaSchema = z.enum(['W', 'U', 'B', 'R', 'G', 'C'] as [string, ...string[]]);
 
 const cardImagesSchema = z
   .object({
@@ -49,6 +51,11 @@ const cardSchema = z.object({
   canBeCommander: z.boolean(),
   unlimitedQuantity: z.boolean(),
   commanderLegal: z.boolean(),
+  // Phase 2 production metadata. Legacy (v1) snapshots lack these; the defaults
+  // mark them as "production unknown / incomplete" rather than "produces nothing"
+  // so they are flagged for refresh instead of being silently misclassified.
+  produces: z.array(producedManaSchema).default([]),
+  productionDataComplete: z.boolean().default(false),
   printing: cardPrintingSchema,
 });
 

@@ -39,6 +39,9 @@ export const scryfallCardSchema = z.object({
   oracle_text: z.string().optional(),
   colors: z.array(z.string()).optional(),
   color_identity: z.array(z.string()).optional(),
+  // Structured list of mana symbols this card can produce (e.g. ["G","C"]).
+  // Present only on cards Scryfall recognizes as mana sources.
+  produced_mana: z.array(z.string()).optional(),
   image_uris: scryfallImageUrisSchema.optional(),
   card_faces: z.array(scryfallCardFaceSchema).optional(),
   set: z.string(),

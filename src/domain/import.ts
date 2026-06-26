@@ -18,10 +18,17 @@ const SECTION_HEADERS: Record<string, DeckSection> = {
   maybe: 'maybeboard',
 };
 
+const SECTION_WORDS =
+  'commander|commanders|deck|main|mainboard|maindeck|sideboard|maybeboard|maybe';
+
 /** Strip a single line of cosmetic annotations a card name may carry. */
 function cleanName(name: string): string {
   return (
     name
+      // Legacy inline section annotation: "Azusa, Lost but Seeking // Commander".
+      // Only stripped when the suffix is a known section word, so split-card
+      // names such as "Fire // Ice" are preserved intact.
+      .replace(new RegExp(`\\s*//\\s*(${SECTION_WORDS})\\s*$`, 'i'), '')
       // Trailing set/collector annotation: "(C21) 263" or "(M21)"
       .replace(/\s*\([a-z0-9]{2,5}\)\s*[\w-]*\s*$/i, '')
       // Foil markers like *F* or *E*
@@ -69,8 +76,23 @@ export function parseDeckList(text: string): ParsedDeckList {
       continue;
     }
 
-    // Comments
-    if (raw.startsWith('//') || raw.startsWith('#')) continue;
+    // Comments. A comment whose text names a section (e.g. `// Commander`,
+    // `// Deck`, `// Sideboard`) acts as a section header — this is how the MTGO
+    // export marks sections without inline annotations. Other comments are
+    // ignored.
+    if (raw.startsWith('//') || raw.startsWith('#')) {
+      const commentKey = raw
+        .replace(/^(?:\/\/+|#+)\s*/, '')
+        .replace(/:$/, '')
+        .trim()
+        .toLowerCase();
+      if (SECTION_HEADERS[commentKey]) {
+        section = SECTION_HEADERS[commentKey]!;
+        sawExplicitHeader = true;
+        blankAfterMain = false;
+      }
+      continue;
+    }
 
     // MTGO sideboard prefix
     let working = raw;

@@ -31,6 +31,31 @@ export class ManabaseDb extends Dexie {
       decks: '&id, name, updatedAt',
       preferences: '&key',
     });
+
+    // v2 — Phase 2 added mana-production metadata to each card snapshot. The
+    // index layout is unchanged; this migration backfills the new fields on
+    // existing card snapshots. Legacy cards are marked `productionDataComplete:
+    // false` (production unknown) rather than being treated as producing nothing,
+    // and the deck's stored schema version is bumped. The v1 block above is left
+    // untouched, as required by the versioning policy.
+    this.version(2)
+      .stores({
+        decks: '&id, name, updatedAt',
+        preferences: '&key',
+      })
+      .upgrade(async (tx) => {
+        await tx
+          .table('decks')
+          .toCollection()
+          .modify((deck: Deck) => {
+            for (const entry of deck.cards ?? []) {
+              const card = entry.card as Partial<Deck['cards'][number]['card']>;
+              if (card.produces === undefined) card.produces = [];
+              if (card.productionDataComplete === undefined) card.productionDataComplete = false;
+            }
+            deck.schemaVersion = PERSISTENCE_SCHEMA_VERSION;
+          });
+      });
   }
 }
 

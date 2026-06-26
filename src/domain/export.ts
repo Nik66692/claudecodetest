@@ -39,9 +39,15 @@ export function exportText(deck: Deck): string {
 }
 
 /**
- * MTGO-style export: a flat main list, a blank line, then the maybeboard/
- * sideboard. The commander is included in the main list because MTGO has no
- * commander concept; it is also annotated with a leading comment for clarity.
+ * MTGO-style export. MTGO has no native commander section, so the deck is a flat
+ * list of `quantity name` rows with a blank line before the sideboard/maybeboard.
+ *
+ * Section boundaries are written as standalone `// …` comment lines, which strict
+ * MTGO consumers ignore (they read only the card rows) but which Manabase's
+ * importer understands as section headers. Critically, every card row is a valid
+ * `quantity name` line — the commander name is NOT annotated inline (the previous
+ * `name // Commander` form made the commander unrecognizable on re-import and
+ * collided with split-card names such as `Fire // Ice`).
  */
 export function exportMtgo(deck: Deck): string {
   const out: string[] = [];
@@ -50,12 +56,18 @@ export function exportMtgo(deck: Deck): string {
   const maybe = section(deck, 'maybeboard');
 
   if (commander.length) {
-    out.push(...commander.map((c) => `${line(c)} // Commander`));
+    out.push('// Commander');
+    out.push(...commander.map(line));
+    out.push('');
+    // After a commander block, mark where the main deck resumes so the importer
+    // switches back out of the commander section.
+    out.push('// Deck');
   }
   out.push(...main.map(line));
 
   if (maybe.length) {
     out.push('');
+    out.push('// Sideboard');
     out.push(...maybe.map(line));
   }
   return out.join('\n').trim() + '\n';

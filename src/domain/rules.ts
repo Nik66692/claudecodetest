@@ -52,6 +52,7 @@ export type RuleViolationKind =
   | 'too-many-copies'
   | 'out-of-color-identity'
   | 'missing-commander'
+  | 'invalid-commander'
   | 'deck-size';
 
 export interface RuleViolation {
@@ -74,6 +75,19 @@ export function validateDeck(deck: Deck): RuleViolation[] {
       kind: 'missing-commander',
       message: 'No commander selected. A Commander deck needs a legendary commander.',
     });
+  }
+
+  // Surface any commander-section card that is not actually commander-eligible.
+  // This can only happen with legacy or hand-edited data; report it as a warning
+  // instead of crashing so the deck still opens.
+  for (const entry of cmdrs) {
+    if (!entry.card.canBeCommander) {
+      violations.push({
+        kind: 'invalid-commander',
+        cardId: entry.cardId,
+        message: `${entry.card.name} is in the commander slot but cannot be a commander.`,
+      });
+    }
   }
 
   for (const entry of deck.cards) {

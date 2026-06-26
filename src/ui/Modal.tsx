@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
 import styles from './Modal.module.css';
@@ -14,6 +14,13 @@ export interface ModalProps {
   width?: string;
   /** Disable closing on overlay click / Escape (e.g. while a critical action runs). */
   dismissible?: boolean;
+  /**
+   * Element to focus when the dialog opens. Provide a typed ref to the control
+   * that should receive focus (e.g. a search input). When omitted, the first
+   * focusable element in the dialog is focused. Focus is initialized exactly
+   * once per closed→open transition, so re-renders never steal focus.
+   */
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
 const FOCUSABLE =
@@ -28,11 +35,23 @@ export function Modal({
   footer,
   width,
   dismissible = true,
+  initialFocusRef,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const subtitleId = useId();
+
+  // Keep the latest values without re-running the open effect when an inline
+  // callback (e.g. `onClose={() => …}`) changes identity on every render. The
+  // open effect intentionally depends only on `open`, so focus is initialized
+  // once per open and rerenders cannot reset it.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const dismissibleRef = useRef(dismissible);
+  dismissibleRef.current = dismissible;
+  const initialFocusRefRef = useRef(initialFocusRef);
+  initialFocusRefRef.current = initialFocusRef;
 
   useEffect(() => {
     if (!open) return;
@@ -40,19 +59,22 @@ export function Modal({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    // Move focus into the dialog.
+    // Initialize focus once for this open. Prefer the caller-provided target;
+    // otherwise fall back to the first focusable element, then the dialog.
     const node = dialogRef.current;
-    const first = node?.querySelector<HTMLElement>(FOCUSABLE);
-    (first ?? node)?.focus();
+    const explicit = initialFocusRefRef.current?.current ?? null;
+    const target = explicit ?? node?.querySelector<HTMLElement>(FOCUSABLE) ?? node;
+    target?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape' && dismissible) {
+      if (event.key === 'Escape' && dismissibleRef.current) {
         event.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
-      if (event.key !== 'Tab' || !node) return;
-      const focusable = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+      const dialog = dialogRef.current;
+      if (event.key !== 'Tab' || !dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
         (el) => el.offsetParent !== null || el === document.activeElement,
       );
       if (focusable.length === 0) {
@@ -76,7 +98,7 @@ export function Modal({
       document.body.style.overflow = previousOverflow;
       previouslyFocused.current?.focus?.();
     };
-  }, [open, onClose, dismissible]);
+  }, [open]);
 
   if (!open) return null;
 

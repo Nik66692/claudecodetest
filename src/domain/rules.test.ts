@@ -43,4 +43,21 @@ describe('validateDeck', () => {
     const violations = validateDeck(deck);
     expect(violations.some((v) => v.kind === 'deck-size')).toBe(true);
   });
+
+  it('warns about an ineligible card sitting in the commander slot (legacy data)', () => {
+    // Simulate corrupt/legacy data: a non-commander card placed in the commander
+    // section directly (bypassing setCommander).
+    const rock = makeCard({ name: 'Sol Ring', canBeCommander: false });
+    const deck = createDeck();
+    deck.cards.push({
+      cardId: rock.oracleId,
+      card: rock,
+      quantity: 1,
+      section: 'commander',
+      categoryId: null,
+      addedAt: 0,
+    });
+    const violations = validateDeck(deck);
+    expect(violations.some((v) => v.kind === 'invalid-commander')).toBe(true);
+  });
 });
