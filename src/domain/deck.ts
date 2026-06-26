@@ -115,7 +115,11 @@ export function moveCardToSection(
   // rule enforced by the picker.
   if (to === 'commander') {
     if (!entry.card.canBeCommander) return deck;
-    return setCommander(deck, entry.card, { additive: commanders(deck).length > 0, now });
+    const commanderOptions: { additive?: boolean; now?: number } = {
+      additive: commanders(deck).length > 0,
+    };
+    if (now !== undefined) commanderOptions.now = now;
+    return setCommander(deck, entry.card, commanderOptions);
   }
   const withoutSource = deck.cards.filter((c) => c !== entry);
   const target = withoutSource.find((c) => c.cardId === cardId && c.section === to);

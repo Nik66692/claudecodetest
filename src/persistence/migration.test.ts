@@ -18,8 +18,8 @@ function legacyDeckRecord(): unknown {
   const raw = JSON.parse(JSON.stringify(deck)) as Deck & { schemaVersion: number };
   raw.schemaVersion = 1;
   for (const entry of raw.cards) {
-    delete (entry.card as Record<string, unknown>).produces;
-    delete (entry.card as Record<string, unknown>).productionDataComplete;
+    delete (entry.card as unknown as Record<string, unknown>).produces;
+    delete (entry.card as unknown as Record<string, unknown>).productionDataComplete;
   }
   return raw;
 }

@@ -72,3 +72,44 @@ test('library persists a created deck across a reload', async ({ page }) => {
   await page.reload();
   await expect(page.getByRole('link', { name: 'Persistent Deck' })).toBeVisible();
 });
+
+test('build a deck, open Analysis, and keep it after reload', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Create your first deck' }).click();
+  await page.getByLabel('Deck name').fill('Analysis Deck');
+  await page.getByRole('button', { name: 'Create deck' }).click();
+  await expect(page.getByLabel('Deck name')).toHaveValue('Analysis Deck');
+
+  // Choose a commander by typing the full name continuously — focus must stay on
+  // the search input the whole time (Phase 1 focus regression).
+  await page.getByRole('button', { name: 'Choose commander' }).click();
+  const commanderSearch = page.getByPlaceholder('Search legendary commanders…');
+  await expect(commanderSearch).toBeFocused();
+  await commanderSearch.pressSequentially('Azusa, Lost but Seeking', { delay: 25 });
+  await expect(commanderSearch).toHaveValue('Azusa, Lost but Seeking');
+  await expect(commanderSearch).toBeFocused();
+  await page.getByRole('button', { name: 'Choose Azusa, Lost but Seeking' }).click();
+  await expect(page.getByText('Azusa, Lost but Seeking')).toBeVisible();
+
+  // Add a representative spell and a land.
+  await page.getByPlaceholder('Search cards…').fill('Sol Ring');
+  await page.getByRole('button', { name: 'Add Sol Ring to deck' }).click();
+  await page.getByPlaceholder('Search cards…').fill('Forest');
+  await page.getByRole('button', { name: 'Add Forest to deck' }).click();
+
+  // Open the Analysis tab.
+  await page.getByRole('link', { name: 'Analysis' }).click();
+  await expect(page).toHaveURL(/\/analysis$/);
+
+  // The summary and mana curve render and reflect the deck.
+  await expect(page.getByRole('heading', { name: 'Summary' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mana curve' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mana production & sources' })).toBeVisible();
+  // Sol Ring is a 1-drop in the curve table.
+  await expect(page.getByRole('img', { name: /Mana value 1: 1 cards/ })).toBeVisible();
+
+  // Reload directly on the analysis URL: deck and analysis remain available.
+  await page.reload();
+  await expect(page.getByLabel('Deck name')).toHaveValue('Analysis Deck');
+  await expect(page.getByRole('heading', { name: 'Mana curve' })).toBeVisible();
+});
