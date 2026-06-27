@@ -3,11 +3,11 @@
 The product is built in sequence. Each milestone is a usable increment; analysis
 features come only after the foundation is solid.
 
-1. **Application foundation and base deck editor** ← _included in this PR_
-2. **Import, export, and local persistence** ← _included in this PR_
-3. **Sorting, grouping, filters, and views** ← _included in this PR (foundation)_
-4. Mana curve
-5. Mana production and cost comparison
+1. **Application foundation and base deck editor** ← _milestone 1_
+2. **Import, export, and local persistence** ← _milestone 2 foundation_
+3. **Sorting, grouping, filters, and views** ← _milestone 3 foundation_
+4. **Mana curve** ← _implemented (Phase 2)_
+5. **Mana production and cost comparison** ← _implemented (Phase 2)_
 6. Probability calculations
 7. Technical deck analysis
 8. Local combo and synergy engine
@@ -60,12 +60,52 @@ as required by the milestone brief.
   **view** (compact list, detailed list, card grid) concepts.
 - Editable custom categories saved with the deck.
 
-## ⛔ Explicitly deferred (not in this PR)
+## ✅ Added in Phase 2 — Mana curve and manabase analysis
 
-- Mana-curve analysis and all later analysis (milestones 4–7).
-- **Local combo and synergy detection** (milestone 8) — explicitly out of scope
-  for this milestone.
+Phase 2 hardened the Phase 1 foundation and delivered milestones **4** and **5**.
+
+### Stability hardening (Phase 1 repairs)
+
+- **Commander picker focus** — `Modal` now takes an explicit `initialFocusRef`
+  and initializes focus exactly once per open, so typing a commander name never
+  jumps focus to the close button (regression-tested in unit and e2e).
+- **Commander eligibility** — `setCommander` and `moveCardToSection` refuse to
+  put a non-eligible card in the commander slot; the UI hides the option;
+  legacy invalid data is surfaced as a warning, not a crash.
+- **MTGO round-trip** — the MTGO export emits valid `quantity name` rows with
+  `// Commander` / `// Deck` / `// Sideboard` section comments instead of an
+  inline `name // Commander` suffix (which broke re-import and collided with
+  split-card names like `Fire // Ice`). The importer reads section-naming
+  comments as headers.
+- **Deck health** — `validateDeck` warnings (missing/invalid commander, deck
+  size, off-color identity, singleton) are surfaced in the Analysis area.
+- **Autosave** — saves are serialized (no stale overwrite), flushed on unmount /
+  deck switch / `pagehide`, and never set state after unmount.
+
+### Analysis (milestones 4 & 5)
+
+- Pure analysis domain in `src/domain/analysis/` (curve, mana-symbol parser,
+  colored demand, production sources, demand-vs-production), deterministic and
+  React/Dexie/fetch-free, with comprehensive unit tests.
+- New Build / Analysis tabs in the editor (nested `/decks/:id/analysis` route).
+- Mana curve with 0–6 and 7+ buckets, average, percentages, drill-down, and an
+  accessible table equivalent; toggles for commanders, lands, and maybeboard.
+- Colored mana demand separating strict pips from hybrid, two-brid, Phyrexian,
+  and explicit `{C}`.
+- Mana production from Scryfall's structured `produced_mana`, split land/non-land,
+  with the explicit caveat that per-color source counts are non-additive.
+- An honest demand-vs-production comparison (no pass/fail verdict; only a single,
+  labeled `sources / pip` heuristic with its formula shown).
+- `Card` gained `produces` / `productionDataComplete`; persistence bumped to
+  schema **v2** with a real migration; a "Refresh card data" operation completes
+  legacy snapshots via the Scryfall collection endpoint.
+
+## ⛔ Explicitly deferred (future milestones)
+
+- Probability calculations (opening hands, hypergeometric, cast-on-curve,
+  mulligans) and automatic land-count recommendations (milestones 6–7).
+- **Local combo and synergy detection** (milestone 8).
 - Deck primer and advanced presentation (milestone 9).
 - Final optimization (code-splitting, deployment) (milestone 10).
 - Alternate-printing selection, bulk/offline card data, Moxfield/Archidekt URL
-  import.
+  import, card prices.

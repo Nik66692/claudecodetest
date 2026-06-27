@@ -71,12 +71,37 @@ no cloud sync.
   separate concepts; editable custom categories saved with the deck.
 - A coherent, project-owned design system and token set.
 
+## 5a. Analysis scope (Phase 2)
+
+The deck editor has a **Build** and an **Analysis** view. Analysis recomputes
+live from the deck (no recalculate button) and includes:
+
+- **Deck health** — warnings for missing/invalid commander, deck size, off-color
+  cards, and singleton issues (warnings only; not a full rules engine).
+- **Mana curve** — 0–6 and 7+ buckets with counts, percentages, and average;
+  drill-down per bucket; an accessible table equivalent. Defaults exclude lands,
+  commanders, and the maybeboard; each is toggleable. Quantities respected.
+- **Colored mana demand** — strict W/U/B/R/G pips, kept separate from hybrid,
+  two-brid, Phyrexian, and explicit `{C}` symbols; per-color contributors.
+- **Mana production** — recognized sources per color from Scryfall's structured
+  `produced_mana`, split land/non-land. Per-color counts are **non-additive** (a
+  multicolor source counts once per color). Incomplete legacy snapshots are
+  flagged, not read as "produces nothing", with a "Refresh card data" action.
+- **Demand vs production** — an honest side-by-side in WUBRG order, with a single
+  explicitly-labeled `sources / pip` heuristic (formula shown). No pass/fail
+  verdict and no prescribed land count.
+
+**Assumptions are always stated.** Analysis uses Scryfall's normalized mana value
+({X} is not predicted) and structured production data ("can produce" only — no
+quantity, reliability, timing, or restrictions). It is a set of honest heuristics,
+never presented as exact Magic rules evaluation.
+
 ## 6. Future functionality (later milestones)
 
-Mana-curve analysis; mana cost vs. production comparison; draw/cast-on-curve
-probability; technical deck analysis; **local** combo and synergy detection;
-deck primer and advanced presentation; alternate-printing selection; final
-optimization and deployment. See `MILESTONES.md`.
+Draw/cast-on-curve probability; mulligan and opening-hand simulation; automatic
+land-count recommendations; technical deck analysis; **local** combo and synergy
+detection; deck primer and advanced presentation; alternate-printing selection;
+final optimization and deployment. See `MILESTONES.md`.
 
 ## 7. Non-goals
 

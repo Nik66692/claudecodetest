@@ -56,6 +56,12 @@ project-owned to avoid a generic look and unnecessary dependencies.
   mutation, singleton rules, color identity, sorting, grouping, filtering,
   import parsing, export formatting, import application. Deterministic and
   side-effect-free (IDs and timestamps are injectable).
+- **Analysis (`src/domain/analysis`)** — Pure, deterministic mana analysis
+  (curve, mana-symbol parsing, colored demand, production sources, demand-vs-
+  production). Consumes domain `Card`/`Deck` objects only; imports no React,
+  Dexie, browser APIs, or Scryfall client. Results are derived on demand and
+  never persisted. Every function states its assumptions and exposes incomplete-
+  data states — it is a set of honest heuristics, not a Magic rules engine.
 - **Scryfall (`src/scryfall`)** — `ScryfallClient` (HTTP, throttling, dedup,
   cache, error normalization), Zod `schema`, `mapper` (raw → domain `Card`), and
   `ScryfallApi` (autocomplete, search, commander search, exact lookup,
@@ -104,8 +110,14 @@ project-owned to avoid a generic look and unnecessary dependencies.
 - **Validation before use:** every record is parsed through
   `persistedDeckSchema` on read; invalid records are skipped and counted rather
   than crashing the UI, and can be purged from the Local-data screen.
-- **Autosave:** the editor debounces writes (≈400 ms) and flushes on unmount, so
-  edits survive refresh and navigation.
+- **Autosave:** the editor debounces writes (≈400 ms) and flushes on unmount,
+  deck switch, and `pagehide`/`visibilitychange`. Saves are serialized so a newer
+  edit can never be overwritten by an older one, and no state is set after the
+  component unmounts.
+- **Schema migrations:** the store is at **v2**. The `version(2)` migration adds
+  `produces` / `productionDataComplete` to each card snapshot; legacy cards are
+  marked _unknown_ (not "produces nothing") and bumped to the current schema
+  version. The Zod schema also defaults the new fields on read as a safety net.
 
 ## 7. Error handling
 
@@ -140,8 +152,14 @@ project-owned to avoid a generic look and unnecessary dependencies.
 - **Schema migrations:** new Dexie `version(n).upgrade(...)` blocks plus a bumped
   `PERSISTENCE_SCHEMA_VERSION` and Zod schema; existing version blocks are never
   edited.
-- **Analysis features:** future milestones add pure functions under `domain`
-  (curve, production, probability, combos) consuming the existing model.
+- **Analysis features:** the mana curve and mana production/cost comparison are
+  implemented under `src/domain/analysis` (Phase 2); probability and combos are
+  future milestones that will add more pure functions consuming the same model.
+- **Card-data refresh:** `useCardDataRefresh` re-fetches card snapshots via the
+  Scryfall collection endpoint (≤75 ids/request), replacing only card metadata
+  while preserving sections, quantities, categories, dates, and organization. It
+  runs only on demand and surfaces loading / partial / success / offline / error
+  states. This completes legacy snapshots that predate `produces` metadata.
 
 ## 10. Known limitations
 
@@ -151,4 +169,9 @@ project-owned to avoid a generic look and unnecessary dependencies.
 - The response cache is in-memory only (cleared on reload).
 - Only the default printing returned by Scryfall is used; no printing picker yet.
 - No bundle code-splitting yet (single chunk); acceptable for this milestone.
-- Double-faced cards use front-face data for cost/type/image.
+- Double-faced cards use front-face data for cost/type/image, and the curve uses
+  the stored front-face mana value (split/adventure cards are not double-counted).
+- Analysis is heuristic: it uses Scryfall's structured mana value and
+  `produced_mana` ("can produce" only — no quantity, reliability, timing, or
+  restrictions), counts only strict pips as colored demand, and never emits a
+  pass/fail manabase verdict. Per-color source counts are non-additive.
