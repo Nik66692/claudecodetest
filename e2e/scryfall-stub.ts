@@ -8,6 +8,7 @@ interface StubCard {
   cmc?: number;
   colors?: string[];
   color_identity?: string[];
+  produced_mana?: string[];
 }
 
 function fullCard(card: StubCard) {
@@ -27,6 +28,7 @@ function fullCard(card: StubCard) {
       normal: 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=',
       art_crop: 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=',
     },
+    ...(card.produced_mana ? { produced_mana: card.produced_mana } : {}),
     set: 'tst',
     set_name: 'Test Set',
     collector_number: card.id,
@@ -49,7 +51,14 @@ const COMMANDERS: StubCard[] = [
 ];
 
 const CARDS: StubCard[] = [
-  { id: 'solring', name: 'Sol Ring', type_line: 'Artifact', mana_cost: '{1}', cmc: 1 },
+  {
+    id: 'solring',
+    name: 'Sol Ring',
+    type_line: 'Artifact',
+    mana_cost: '{1}',
+    cmc: 1,
+    produced_mana: ['C'],
+  },
   {
     id: 'llanowar',
     name: 'Llanowar Elves',
@@ -58,8 +67,16 @@ const CARDS: StubCard[] = [
     cmc: 1,
     colors: ['G'],
     color_identity: ['G'],
+    produced_mana: ['G'],
   },
-  { id: 'forest', name: 'Forest', type_line: 'Basic Land — Forest', cmc: 0, color_identity: ['G'] },
+  {
+    id: 'forest',
+    name: 'Forest',
+    type_line: 'Basic Land — Forest',
+    cmc: 0,
+    color_identity: ['G'],
+    produced_mana: ['G'],
+  },
 ];
 
 const ALL = [...COMMANDERS, ...CARDS];

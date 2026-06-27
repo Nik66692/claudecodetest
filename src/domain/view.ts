@@ -1,7 +1,7 @@
 import type { DeckView } from './types';
 import { EMPTY_FILTERS } from './filter';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export function defaultView(): DeckView {
   return {

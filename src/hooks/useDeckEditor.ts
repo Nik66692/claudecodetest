@@ -41,36 +41,62 @@ export function useDeckEditor(deckId: string): DeckEditorApi {
 
   const pendingDeck = useRef<Deck | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savingRef = useRef(false);
+  const mountedRef = useRef(true);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  /**
+   * Persist the newest pending deck. Saves are serialized: if a write is already
+   * in flight, newer edits are parked in `pendingDeck` and drained in order, so
+   * an older snapshot can never overwrite a newer one. Status updates are guarded
+   * against the component having unmounted, so leaving the editor never triggers
+   * a state update on an unmounted component while still completing the write.
+   */
   const flush = useCallback(async () => {
     if (saveTimer.current) {
       clearTimeout(saveTimer.current);
       saveTimer.current = null;
     }
-    const toSave = pendingDeck.current;
-    if (!toSave) return;
-    pendingDeck.current = null;
-    setSaveStatus('saving');
+    if (savingRef.current || !pendingDeck.current) return;
+    savingRef.current = true;
+    if (mountedRef.current) setSaveStatus('saving');
     try {
-      await deckRepository.save(toSave);
-      setSaveStatus('saved');
+      // Drain in order; new edits scheduled mid-write are picked up here.
+      while (pendingDeck.current) {
+        const toSave = pendingDeck.current;
+        pendingDeck.current = null;
+        await deckRepository.save(toSave);
+      }
+      if (mountedRef.current) setSaveStatus('saved');
     } catch {
-      setSaveStatus('error');
+      if (mountedRef.current) setSaveStatus('error');
+    } finally {
+      savingRef.current = false;
     }
   }, []);
 
-  const scheduleSave = useCallback(
-    (next: Deck) => {
-      pendingDeck.current = next;
-      setSaveStatus('saving');
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-      saveTimer.current = setTimeout(() => void flush(), SAVE_DEBOUNCE_MS);
-    },
-    [flush],
-  );
+  // Keep a stable handle to flush for effects that must not re-run when it (never)
+  // changes, and for the global lifecycle listeners below.
+  const flushRef = useRef(flush);
+  flushRef.current = flush;
 
-  // Load on id change.
+  const scheduleSave = useCallback((next: Deck) => {
+    pendingDeck.current = next;
+    if (mountedRef.current) setSaveStatus('saving');
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => void flushRef.current(), SAVE_DEBOUNCE_MS);
+  }, []);
+
+  // Load on id change. Flush any unsaved edits from the previously loaded deck
+  // first so switching decks quickly cannot drop the last edit.
   useEffect(() => {
+    void flushRef.current();
     let active = true;
     setStatus('loading');
     setDeck(null);
@@ -91,12 +117,22 @@ export function useDeckEditor(deckId: string): DeckEditorApi {
     };
   }, [deckId]);
 
-  // Flush any pending save when leaving the editor.
+  // Flush any pending save when leaving the editor, and best-effort when the tab
+  // is hidden or unloaded (covers refresh/close shortly after an edit, as far as
+  // the browser reliably allows).
   useEffect(() => {
-    return () => {
-      void flush();
+    const onLeave = () => void flushRef.current();
+    window.addEventListener('pagehide', onLeave);
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') onLeave();
     };
-  }, [flush]);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', onLeave);
+      document.removeEventListener('visibilitychange', onVisibility);
+      void flushRef.current();
+    };
+  }, []);
 
   const update = useCallback(
     (mutator: (current: Deck) => Deck) => {

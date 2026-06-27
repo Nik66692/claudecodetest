@@ -85,11 +85,13 @@ See also:
 - [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md)
 - [`docs/MILESTONES.md`](docs/MILESTONES.md)
 
-## Current milestone
+## Current status
 
-**Milestone 1 — Application foundation and base deck editor**, plus the
-foundations of import/export, local persistence, and sorting/grouping/filters/
-views. Implemented in this release:
+**Phase 2 — Mana curve and manabase analysis** (milestones 4 & 5), on top of the
+milestone-1 foundation and the import/export, persistence, and sorting/grouping
+foundations.
+
+Foundation (milestones 1–3):
 
 - Deck library (create / name / rename / duplicate / delete / open) with autosave
   to IndexedDB and refresh recovery.
@@ -100,6 +102,25 @@ views. Implemented in this release:
 - Separate sorting, grouping, filtering, and view modes; editable custom
   categories saved with the deck.
 - Dark-first, responsive (375 / 768 / 1024 / 1440 px), accessible UI.
+
+New in Phase 2:
+
+- **Build / Analysis** tabs in the editor (deep-linkable analysis route).
+- **Mana curve** (0–6 and 7+ buckets, average, drill-down, table equivalent;
+  toggles for commanders/lands/maybeboard).
+- **Colored mana demand** separating strict pips from hybrid, two-brid, Phyrexian,
+  and explicit `{C}`.
+- **Mana production** from Scryfall's structured `produced_mana` (land/non-land
+  split; per-color counts are non-additive), with a **Refresh card data** action
+  that completes pre-Phase-2 snapshots.
+- **Demand vs production** — an honest comparison with a single labeled heuristic,
+  no pass/fail verdict.
+- **Deck health** warnings surfaced in the Analysis view.
+- Stability fixes: commander-picker focus, commander eligibility, MTGO
+  round-tripping, and hardened autosave.
+
+All analysis states its assumptions and is heuristic — never presented as exact
+Magic rules evaluation.
 
 ## Limitations
 

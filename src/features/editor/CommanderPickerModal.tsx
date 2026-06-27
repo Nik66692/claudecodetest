@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Card } from '@/domain/types';
 import { Modal, TextField, IconButton, InlineLoading, EmptyState, ErrorState } from '@/ui';
 import { useCardSearch } from '@/hooks/useCardSearch';
@@ -13,6 +13,9 @@ export interface CommanderPickerModalProps {
 export function CommanderPickerModal({ open, onClose, onSelect }: CommanderPickerModalProps) {
   const [query, setQuery] = useState('');
   const search = useCardSearch(open ? query : '', 'commanders');
+  // The picker owns the focus target and hands it to the Modal so focus is
+  // initialized exactly once on open and never competes with a stray autoFocus.
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <Modal
@@ -21,8 +24,10 @@ export function CommanderPickerModal({ open, onClose, onSelect }: CommanderPicke
       title="Choose a commander"
       subtitle="Legendary creatures and other cards that can be your commander."
       width="34rem"
+      initialFocusRef={inputRef}
     >
       <TextField
+        ref={inputRef}
         label="Search commanders"
         hideLabel
         leadingIcon="search"
@@ -31,7 +36,6 @@ export function CommanderPickerModal({ open, onClose, onSelect }: CommanderPicke
         onChange={(e) => setQuery(e.target.value)}
         type="search"
         autoComplete="off"
-        autoFocus
       />
       <div
         style={{ marginTop: 'var(--space-3)', maxHeight: '50vh', overflowY: 'auto' }}

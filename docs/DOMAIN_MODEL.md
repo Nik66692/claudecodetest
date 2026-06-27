@@ -26,11 +26,21 @@ interface Card {
   canBeCommander: boolean; // legendary creature / "can be your commander"
   unlimitedQuantity: boolean; // basics + "any number of cards named …"
   commanderLegal: boolean;
+  produces: ProducedMana[]; // colors/colorless from Scryfall `produced_mana`
+  productionDataComplete: boolean; // false for pre-Phase-2 snapshots (unknown ≠ none)
   printing: CardPrinting; // one default printing
 }
 
 type ManaColor = 'W' | 'U' | 'B' | 'R' | 'G';
+type ProducedMana = ManaColor | 'C';
 ```
+
+`produces` is a **"can produce" signal only**, taken from Scryfall's structured
+`produced_mana`. An empty array means the snapshot was captured and the card adds
+no mana; that is distinct from `productionDataComplete: false`, which means the
+snapshot predates Phase 2 and production is **unknown** (offer "Refresh card
+data"). `produces` carries no information about quantity, reliability, timing, or
+activation conditions.
 
 ## CardPrinting
 
@@ -159,24 +169,47 @@ type DeckExportFormat = 'text' | 'mtgo';
 
 - `text` — section headers (`Commander` / `Deck` / `Maybeboard`) + `qty name`
   lines; re-imports losslessly through `parseDeckList`.
-- `mtgo` — flat main list (commander annotated with `// Commander`) and a
-  blank-line-separated maybeboard.
+- `mtgo` — a flat list of valid `qty name` rows. MTGO has no native commander
+  section, so sections are written as standalone `// Commander` / `// Deck` /
+  `// Sideboard` comment lines (ignored by strict MTGO consumers, read as headers
+  by `parseDeckList`). Card names are never annotated inline, so the export
+  re-imports without mangling commander names or split-card names (`Fire // Ice`).
 
 ## ScryfallCard (raw external type)
 
 Defined and validated in `src/scryfall/schema.ts` with Zod. This is the **raw**
-API shape (snake_case, optional fields, `card_faces`, `legalities`, …). It is
-intentionally lenient (unknown fields ignored) and is mapped to `Card` by
-`mapScryfallCard`. No other layer references it.
+API shape (snake_case, optional fields, `card_faces`, `legalities`,
+`produced_mana`, …). It is intentionally lenient (unknown fields ignored) and is
+mapped to `Card` by `mapScryfallCard`. No other layer references it.
+
+## Analysis types (Phase 2)
+
+Pure, deterministic types in `src/domain/analysis/` consumed by the Analysis UI;
+nothing here is persisted (all derived on demand):
+
+- `ManaSymbol` — a classified mana-cost symbol (`generic`, `colored`,
+  `colorless`, `hybrid`, `hybrid-generic`, `phyrexian`, `variable`, `snow`,
+  `unknown`). Special symbols are never collapsed into strict colored pips.
+- `ManaCurve` — 0–6 and 7+ buckets with counts, percentages, average, and
+  per-bucket card drill-down.
+- `ManaDemand` — strict pips vs hybrid/Phyrexian/colorless/variable, with
+  per-color contributors.
+- `ManaProduction` — land/non-land source counts per color (non-additive),
+  incomplete-metadata count, and contributors.
+- `DemandVsProduction` — per-color strict demand vs recognized sources, plus a
+  single labeled `sourcesPerStrictPip` heuristic.
 
 ## Persisted schema versions
 
-- `PERSISTENCE_SCHEMA_VERSION` (currently **1**) — the version of the persisted
+- `PERSISTENCE_SCHEMA_VERSION` (currently **2**) — the version of the persisted
   deck shape, stored on each deck as `schemaVersion` and validated on read via
-  `persistedDeckSchema`.
-- Dexie store versions are declared in `src/persistence/db.ts`. Future migrations
-  add new `version(n).upgrade(...)` blocks and bump the schema version; existing
-  blocks are never modified.
+  `persistedDeckSchema`. v2 added `produces` / `productionDataComplete` to each
+  card snapshot.
+- Dexie store versions are declared in `src/persistence/db.ts`. The `version(2)`
+  migration backfills the new fields on existing snapshots (legacy cards →
+  `productionDataComplete: false`, i.e. _unknown_, never "produces nothing") and
+  bumps each deck's `schemaVersion`. Future migrations add new
+  `version(n).upgrade(...)` blocks; existing blocks are never modified.
 
 ## Modeled rules (limited, by design)
 

@@ -27,6 +27,8 @@ export type IconName =
   | 'filter'
   | 'cards'
   | 'more'
+  | 'chart'
+  | 'refresh'
   | 'info';
 
 const PATHS: Record<IconName, JSX.Element> = {
@@ -125,6 +127,18 @@ const PATHS: Record<IconName, JSX.Element> = {
   cards: (
     <>
       <rect x="6" y="3.5" width="9" height="12" rx="1.5" transform="rotate(8 10 9)" />
+    </>
+  ),
+  chart: (
+    <>
+      <path d="M3 3v14h14" />
+      <path d="M6.5 14v-3M10 14V7M13.5 14v-5" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M16 6.5A6.5 6.5 0 104 8" />
+      <path d="M16 3v4h-4" />
     </>
   ),
   info: (

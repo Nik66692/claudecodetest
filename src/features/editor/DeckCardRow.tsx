@@ -116,7 +116,11 @@ export function DeckCardRow({
           {menuOpen && (
             <div className={`${menuStyles.menu} ${rowStyles.cardMenu}`} role="menu">
               <p className={rowStyles.menuSectionLabel}>Move to section</p>
-              {DECK_SECTIONS.map((section) => (
+              {DECK_SECTIONS.filter(
+                // Only offer the commander destination for commander-eligible
+                // cards, so a generic move can never create an invalid commander.
+                (section) => section !== 'commander' || entry.card.canBeCommander,
+              ).map((section) => (
                 <button
                   key={section}
                   type="button"
@@ -129,7 +133,7 @@ export function DeckCardRow({
                   }}
                 >
                   {section === entry.section && <Icon name="check" size={16} />}
-                  {DECK_SECTION_LABELS[section]}
+                  {section === 'commander' ? 'Make commander' : DECK_SECTION_LABELS[section]}
                 </button>
               ))}
               <p className={`${rowStyles.menuSectionLabel} ${rowStyles.menuSectionLabelDivider}`}>

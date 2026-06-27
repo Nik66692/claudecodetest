@@ -11,6 +11,11 @@ export type ManaColor = 'W' | 'U' | 'B' | 'R' | 'G';
 
 export const MANA_COLORS: readonly ManaColor[] = ['W', 'U', 'B', 'R', 'G'];
 
+/** A symbol a card can add to a mana pool: one of the five colors or colorless. */
+export type ProducedMana = ManaColor | 'C';
+
+export const PRODUCED_MANA: readonly ProducedMana[] = ['W', 'U', 'B', 'R', 'G', 'C'];
+
 /** Image URLs for a specific printing, normalized from Scryfall `image_uris`. */
 export interface CardImages {
   small?: string;
@@ -58,6 +63,21 @@ export interface Card {
    */
   unlimitedQuantity: boolean;
   commanderLegal: boolean;
+  /**
+   * Colors (and colorless `'C'`) this card can add to a mana pool, taken from
+   * Scryfall's structured `produced_mana`. An empty array means the snapshot was
+   * captured and the card produces no mana; it does NOT mean "unknown" — that is
+   * distinguished by {@link Card.productionDataComplete}. This is a "can produce"
+   * signal only: it carries no information about quantity, reliability, timing,
+   * or activation conditions.
+   */
+  produces: ProducedMana[];
+  /**
+   * Whether mana-production metadata was captured for this snapshot. `false` for
+   * legacy snapshots created before Phase 2; such cards must be treated as having
+   * unknown production (offer "Refresh card data") rather than "produces nothing".
+   */
+  productionDataComplete: boolean;
   printing: CardPrinting;
 }
 

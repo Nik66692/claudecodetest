@@ -19,6 +19,7 @@ import { useDeckEditor } from '@/hooks/useDeckEditor';
 import { pluralize } from '@/lib/format';
 import { CommanderBar } from './CommanderBar';
 import { CommanderPickerModal } from './CommanderPickerModal';
+import { EditorTabs } from './EditorTabs';
 import { ViewToolbar } from './ViewToolbar';
 import { FilterBar } from './FilterBar';
 import { DeckCardList } from './DeckCardList';
@@ -176,6 +177,8 @@ export function EditorPage() {
             </>
           }
         />
+
+        <EditorTabs deckId={deckId} />
 
         <div className={styles.deckColumn}>
           <CommanderBar

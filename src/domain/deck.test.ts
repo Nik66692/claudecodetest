@@ -109,6 +109,32 @@ describe('setCommander', () => {
     deck = setCommander(deck, null);
     expect(commanders(deck)).toHaveLength(0);
   });
+
+  it('refuses to make an ineligible card (e.g. a mana rock) a commander', () => {
+    const rock = makeCard({ name: 'Sol Ring', typeLine: 'Artifact', canBeCommander: false });
+    const deck = setCommander(createDeck(), rock);
+    expect(commanders(deck)).toHaveLength(0);
+    expect(deck.cards).toHaveLength(0);
+  });
+});
+
+describe('moveCardToSection commander guard', () => {
+  it('does not let a generic move drop an ineligible card into the commander slot', () => {
+    const rock = makeCard({ name: 'Sol Ring', typeLine: 'Artifact', canBeCommander: false });
+    let deck = addCard(createDeck(), rock, { section: 'main' });
+    deck = moveCardToSection(deck, rock.oracleId, 'main', 'commander');
+    expect(commanders(deck)).toHaveLength(0);
+    // The card stays where it was rather than being silently relabelled.
+    expect(sectionCount(deck, 'main')).toBe(1);
+  });
+
+  it('moves an eligible card into the commander slot using commander semantics', () => {
+    const azusa = azusaCommander();
+    let deck = addCard(createDeck(), azusa, { section: 'main' });
+    deck = moveCardToSection(deck, azusa.oracleId, 'main', 'commander');
+    expect(commanders(deck).map((c) => c.card.name)).toEqual(['Azusa, Lost but Seeking']);
+    expect(sectionCount(deck, 'main')).toBe(0);
+  });
 });
 
 describe('categories', () => {

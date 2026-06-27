@@ -34,6 +34,36 @@ describe('mapScryfallCard', () => {
     expect(card.commanderLegal).toBe(true);
     expect(card.canBeCommander).toBe(false);
     expect(card.printing.images.normal).toBe('https://img/n.jpg');
+    // No produced_mana on this raw card → captured, produces nothing.
+    expect(card.produces).toEqual([]);
+    expect(card.productionDataComplete).toBe(true);
+  });
+
+  it('maps produced_mana into normalized production data (WUBRG+C order)', () => {
+    const card = parseAndMap({
+      id: 'command-tower',
+      name: 'Command Tower',
+      type_line: 'Land',
+      produced_mana: ['G', 'W', 'U', 'B', 'R'],
+      set: 'cmd',
+      collector_number: '1',
+    });
+    expect(card.produces).toEqual(['W', 'U', 'B', 'R', 'G']);
+    expect(card.productionDataComplete).toBe(true);
+  });
+
+  it('captures colorless production', () => {
+    const card = parseAndMap({
+      id: 'sol-ring',
+      name: 'Sol Ring',
+      mana_cost: '{1}',
+      cmc: 1,
+      type_line: 'Artifact',
+      produced_mana: ['C'],
+      set: 'cmd',
+      collector_number: '2',
+    });
+    expect(card.produces).toEqual(['C']);
   });
 
   it('flags legendary creatures as commander-eligible', () => {

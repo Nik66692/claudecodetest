@@ -1,11 +1,18 @@
-import type { Card, CardImages, ManaColor } from '@/domain/types';
-import { MANA_COLORS } from '@/domain/types';
+import type { Card, CardImages, ManaColor, ProducedMana } from '@/domain/types';
+import { MANA_COLORS, PRODUCED_MANA } from '@/domain/types';
 import type { ScryfallCard } from './schema';
 
 function toColors(input: string[] | undefined): ManaColor[] {
   if (!input) return [];
   const set = new Set(input);
   return MANA_COLORS.filter((c) => set.has(c));
+}
+
+/** Normalize Scryfall `produced_mana` to the colors/colorless we model. */
+function toProduced(input: string[] | undefined): ProducedMana[] {
+  if (!input) return [];
+  const set = new Set(input);
+  return PRODUCED_MANA.filter((c) => set.has(c));
 }
 
 function toImages(card: ScryfallCard): CardImages {
@@ -80,6 +87,10 @@ export function mapScryfallCard(card: ScryfallCard): Card {
     canBeCommander: canBeCommander(card),
     unlimitedQuantity: isUnlimitedQuantity(card),
     commanderLegal: (card.legalities?.commander ?? 'legal') === 'legal',
+    // Structured production data is captured here once; the empty case is a real
+    // "produces nothing", not "unknown".
+    produces: toProduced(card.produced_mana),
+    productionDataComplete: true,
     printing: {
       scryfallId: card.id,
       set: card.set,
